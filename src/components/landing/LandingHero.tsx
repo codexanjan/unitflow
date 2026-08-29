@@ -17,9 +17,20 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
     { label: 'kg → lb', categoryId: 'mass', from: 'kilogram', to: 'pound' },
     { label: '°C → °F', categoryId: 'temperature', from: 'celsius', to: 'fahrenheit' },
     { label: 'L → gal', categoryId: 'volume', from: 'liter', to: 'us_gallon' },
-    { label: 'MB → GB', categoryId: 'data_storage', from: 'megabyte', to: 'gigabyte' },
     { label: 'bar → psi', categoryId: 'pressure', from: 'bar', to: 'psi' },
+    { label: 'min/km → min/mi', categoryId: 'pace', from: 'minute_per_kilometer', to: 'minute_per_mile' },
+    { label: 'kW → hp', categoryId: 'power', from: 'kilowatt', to: 'horsepower_metric' },
+    { label: 'MB → GB', categoryId: 'data_storage', from: 'megabyte', to: 'gigabyte' },
+    { label: 'J → cal', categoryId: 'energy', from: 'joule', to: 'calorie' },
+    { label: 'rad → deg', categoryId: 'angle', from: 'radian', to: 'degree' },
   ];
+
+  const handleQuickClick = (categoryId: string, from: string, to: string) => {
+    onSelectQuickPair(categoryId, from, to);
+    setTimeout(() => {
+      document.getElementById('main-converter')?.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
+  };
 
   return (
     <div className="w-full text-center space-y-6 pt-4 pb-6">
@@ -46,7 +57,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
       <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
         <button
           onClick={onStartConverting}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/25 transition-all hover:scale-105"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/25 transition-all hover:scale-105 cursor-pointer"
         >
           <span>Start Converting</span>
           <ArrowRight className="w-4 h-4" />
@@ -54,7 +65,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
 
         <button
           onClick={onExploreUnits}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold shadow-sm transition-all"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold shadow-sm transition-all cursor-pointer"
         >
           <Grid className="w-4 h-4 text-slate-400" />
           <span>Explore Units</span>
@@ -62,15 +73,15 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
       </div>
 
       {/* Popular Quick Conversion Chips */}
-      <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-1">
+      <div className="flex flex-wrap items-center justify-center gap-2 pt-2 max-w-4xl mx-auto">
+        <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-1 flex items-center gap-1">
           Popular:
         </span>
         {quickConversions.map((q) => (
           <button
             key={q.label}
-            onClick={() => onSelectQuickPair(q.categoryId, q.from, q.to)}
-            className="px-3 py-1 rounded-xl text-xs font-mono font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-xs"
+            onClick={() => handleQuickClick(q.categoryId, q.from, q.to)}
+            className="px-3 py-1 rounded-xl text-xs font-mono font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-xs cursor-pointer"
           >
             {q.label}
           </button>

@@ -32,9 +32,9 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenS
   const navItems: { id: NavTab; label: string; icon: React.ElementType; badge?: number }[] = [
     { id: 'converter', label: 'Converter', icon: Calculator },
     { id: 'currency', label: 'Currency', icon: TrendingUp },
+    { id: 'categories', label: 'Explore', icon: Grid },
     { id: 'favorites', label: 'Favorites', icon: Star, badge: favorites.length },
     { id: 'history', label: 'History', icon: History, badge: history.length },
-    { id: 'categories', label: 'Explore', icon: Grid },
     { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'about', label: 'About', icon: Info },
   ];
@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenS
           {/* Brand Logo */}
           <button
             onClick={() => setActiveTab('converter')}
-            className="flex items-center gap-2.5 group text-left focus:outline-none"
+            className="flex items-center gap-2.5 group text-left focus:outline-none cursor-pointer"
           >
             <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform">
               <svg className="w-5 h-5" viewBox="0 0 32 32" fill="none">
@@ -84,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenS
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all relative ${
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all relative cursor-pointer ${
                     isActive
                       ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold'
                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100'
@@ -107,7 +107,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenS
             {/* Global Search Hotkey Trigger */}
             <button
               onClick={onOpenSearch}
-              className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-800/60 hover:bg-slate-200/80 dark:hover:bg-slate-750 text-slate-500 dark:text-slate-400 text-xs transition-all shadow-sm group"
+              className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-800/60 hover:bg-slate-200/80 dark:hover:bg-slate-750 text-slate-500 dark:text-slate-400 text-xs transition-all shadow-xs group cursor-pointer"
               title="Search units (Ctrl + K)"
             >
               <Search className="w-4 h-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
@@ -120,7 +120,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenS
             {/* Theme Toggle Button */}
             <button
               onClick={cycleTheme}
-              className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-sm"
+              className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-xs cursor-pointer"
               title={`Current theme: ${theme}. Click to switch.`}
               aria-label="Toggle theme"
             >
@@ -137,8 +137,8 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenS
       </header>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 py-1.5 px-2 flex items-center justify-around shadow-2xl">
-        {navItems.slice(0, 5).map((item) => {
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 py-1.5 px-2 flex items-center justify-around shadow-2xl overflow-x-auto scrollbar-none">
+        {navItems.map((item) => {
           const IconComponent = item.icon;
           const isActive = activeTab === item.id;
 
@@ -146,16 +146,16 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenS
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all relative ${
+              className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all relative shrink-0 cursor-pointer ${
                 isActive
                   ? 'text-indigo-600 dark:text-indigo-400 font-bold'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              <IconComponent className="w-5 h-5" />
+              <IconComponent className="w-4.5 h-4.5" />
               <span className="text-[10px]">{item.label}</span>
               {item.badge !== undefined && item.badge > 0 && (
-                <span className="absolute top-0 right-2 w-2 h-2 rounded-full bg-indigo-600" />
+                <span className="absolute top-0 right-1.5 w-2 h-2 rounded-full bg-indigo-600" />
               )}
             </button>
           );

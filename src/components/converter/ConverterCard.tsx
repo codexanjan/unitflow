@@ -9,8 +9,11 @@ import {
   Search,
   CheckCheck,
   Calculator,
+  Grid,
+  X,
+  Sparkles,
 } from 'lucide-react';
-import { CategoryDefinition } from '../../engine/types';
+import { CategoryDefinition, CategoryGroup } from '../../engine/types';
 import { allCategories, getCategoryById } from '../../units';
 import { convertUnits } from '../../engine/converter';
 import { evaluateExpression } from '../../engine/expressionParser';
@@ -45,6 +48,11 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
     () => initialCategoryId || 'length'
   );
+
+  // Group filter & Category Search
+  const [selectedGroup, setSelectedGroup] = useState<string>('All');
+  const [categorySearch, setCategorySearch] = useState<string>('');
+  const [isCategoryPickerOpen, setIsCategoryPickerOpen] = useState(false);
 
   const currentCategory: CategoryDefinition = useMemo(() => {
     return getCategoryById(selectedCategoryId) || allCategories[0];
@@ -108,6 +116,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
       setFromUnitId(cat.units[0].id);
       setToUnitId(cat.units[1]?.id || cat.units[0].id);
     }
+    setIsCategoryPickerOpen(false);
   };
 
   // Close dropdowns on outside click
@@ -134,7 +143,6 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
 
   // Expression evaluation
   const evaluatedInput = useMemo(() => {
-    // If numeral system with non-decimal fromUnit, don't math-eval
     if (currentCategory.id === 'numeral_systems' && fromUnit.id !== 'decimal') {
       return { success: true, value: rawInput, isExpression: false };
     }
@@ -191,7 +199,6 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
     setFromUnitId(prevTo);
     setToUnitId(prevFrom);
 
-    // If we have a result, we can set the new input to the previous result
     if (conversionResult && typeof conversionResult.output === 'number' && Number.isFinite(conversionResult.output)) {
       setRawInput(String(conversionResult.output));
     }
@@ -236,6 +243,32 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
 
   const isCurrentFavorite = isFavorite(currentCategory.id, fromUnit.id, toUnit.id);
 
+  // Filtered categories based on selected group & search
+  const groups: ('All' | CategoryGroup)[] = [
+    'All',
+    'Basic',
+    'Physics & Engineering',
+    'Electrical',
+    'Data',
+    'Light & Sound',
+    'Specialized',
+  ];
+
+  const visibleCategories = useMemo(() => {
+    return allCategories.filter((cat) => {
+      const matchGroup = selectedGroup === 'All' || cat.group === selectedGroup;
+      const matchSearch =
+        categorySearch === '' ||
+        cat.name.toLowerCase().includes(categorySearch.toLowerCase()) ||
+        cat.units.some(
+          (u) =>
+            u.name.toLowerCase().includes(categorySearch.toLowerCase()) ||
+            u.symbol.toLowerCase().includes(categorySearch.toLowerCase())
+        );
+      return matchGroup && matchSearch;
+    });
+  }, [selectedGroup, categorySearch]);
+
   // Filtered unit options for dropdowns
   const filteredFromUnits = currentCategory.units.filter(
     (u) =>
@@ -253,40 +286,93 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
 
   return (
     <div className="w-full space-y-6">
-      {/* Category Horizontal Pill Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
-        {allCategories.slice(0, 10).map((cat) => {
-          const isActive = cat.id === currentCategory.id;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => handleCategoryChange(cat.id)}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 ${
-                isActive
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
-                  : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <CategoryIcon name={cat.iconName} className="w-3.5 h-3.5" />
-              <span>{cat.name}</span>
-            </button>
-          );
-        })}
+      {/* Category Navigation Controls */}
+      <div className="space-y-2.5">
+        {/* Top Control Bar: Group Filter Pills + Search & Grid Toggle */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+          {/* Group Filter Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            {groups.map((grp) => {
+              const isActive = selectedGroup === grp;
+              return (
+                <button
+                  key={grp}
+                  onClick={() => setSelectedGroup(grp)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                    isActive
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {grp}
+                </button>
+              );
+            })}
+          </div>
 
-        {/* Category Full Selector Dropdown for remaining categories */}
-        <div className="relative shrink-0">
-          <select
-            value={currentCategory.id}
-            onChange={(e) => handleCategoryChange(e.target.value)}
-            className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 outline-none cursor-pointer"
-          >
-            <option disabled value="">More Categories...</option>
-            {allCategories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name} ({cat.group})
-              </option>
-            ))}
-          </select>
+          {/* Quick Actions: Search categories & Browse All button */}
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1 sm:w-48">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={categorySearch}
+                onChange={(e) => setCategorySearch(e.target.value)}
+                placeholder="Filter categories..."
+                className="w-full pl-8 pr-3 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 outline-none focus:border-indigo-500 shadow-xs"
+              />
+              {categorySearch && (
+                <button
+                  onClick={() => setCategorySearch('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+
+            <button
+              onClick={() => setIsCategoryPickerOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-colors shrink-0"
+              title="Open full category visual grid"
+            >
+              <Grid className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">All ({allCategories.length})</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable Category Chip Row */}
+        <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
+          {visibleCategories.map((cat) => {
+            const isActive = cat.id === currentCategory.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => handleCategoryChange(cat.id)}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+                  isActive
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
+                    : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                <CategoryIcon name={cat.iconName} className="w-4 h-4 shrink-0" />
+                <span>{cat.name}</span>
+                <span
+                  className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                    isActive ? 'bg-indigo-700 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                  }`}
+                >
+                  {cat.units.length}
+                </span>
+              </button>
+            );
+          })}
+          {visibleCategories.length === 0 && (
+            <div className="text-xs text-slate-400 py-2">
+              No categories found matching "{categorySearch}".
+            </div>
+          )}
         </div>
       </div>
 
@@ -299,9 +385,14 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
               <CategoryIcon name={currentCategory.iconName} className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
-                {currentCategory.name}
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
+                  {currentCategory.name}
+                </h2>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                  {currentCategory.group}
+                </span>
+              </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
                 {currentCategory.description}
               </p>
@@ -535,7 +626,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopyResult}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm cursor-pointer"
             >
               {copiedResult ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
               {copiedResult ? 'Copied' : 'Copy Result'}
@@ -543,7 +634,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
 
             <button
               onClick={handleCopyFullStatement}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm cursor-pointer"
             >
               <CheckCheck className="w-3.5 h-3.5" />
               Copy Equation
@@ -551,7 +642,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
 
             <button
               onClick={() => toggleFavorite(currentCategory.id, fromUnit.id, toUnit.id, `${fromUnit.symbol} → ${toUnit.symbol}`)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors shadow-sm ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors shadow-sm cursor-pointer ${
                 isCurrentFavorite
                   ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-400'
                   : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
@@ -563,7 +654,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
 
             <button
               onClick={handleShare}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm cursor-pointer"
             >
               <Share2 className="w-3.5 h-3.5" />
               Share
@@ -573,7 +664,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowFormula(!showFormula)}
-              className={`text-xs font-semibold transition-colors ${
+              className={`text-xs font-semibold transition-colors cursor-pointer ${
                 showFormula ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
@@ -582,7 +673,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
 
             <button
               onClick={() => setShowAllUnits(!showAllUnits)}
-              className={`text-xs font-semibold transition-colors ${
+              className={`text-xs font-semibold transition-colors cursor-pointer ${
                 showAllUnits ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
@@ -618,6 +709,90 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
           onSelectToUnit={(id) => setToUnitId(id)}
           onCopy={(_text, label) => onToast(`Copied ${label}!`, 'success')}
         />
+      )}
+
+      {/* Full Visual Category Picker Modal */}
+      {isCategoryPickerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="w-full max-w-4xl max-h-[85vh] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                    All Categories ({allCategories.length})
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Select any category to convert instantly
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsCategoryPickerOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Group Filter */}
+            <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto scrollbar-none bg-slate-50/50 dark:bg-slate-950/30">
+              {groups.map((grp) => (
+                <button
+                  key={grp}
+                  onClick={() => setSelectedGroup(grp)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                    selectedGroup === grp
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {grp}
+                </button>
+              ))}
+            </div>
+
+            {/* Modal Grid of Categories */}
+            <div className="p-5 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {visibleCategories.map((cat) => {
+                const isActive = cat.id === currentCategory.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleCategoryChange(cat.id)}
+                    className={`p-3.5 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
+                      isActive
+                        ? 'border-indigo-600 bg-indigo-50/70 dark:bg-indigo-950/50 shadow-sm'
+                        : 'border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-850 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-white dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <div
+                      className={`p-2.5 rounded-xl ${
+                        isActive
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 border border-slate-200 dark:border-slate-800'
+                      }`}
+                    >
+                      <CategoryIcon name={cat.iconName} className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">
+                        {cat.name}
+                      </div>
+                      <div className="text-[11px] text-slate-400 flex items-center justify-between mt-0.5">
+                        <span className="truncate">{cat.group}</span>
+                        <span className="font-mono font-medium ml-1 shrink-0">{cat.units.length} units</span>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
