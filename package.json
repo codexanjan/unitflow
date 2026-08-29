@@ -1,0 +1,65 @@
+{
+  "name": "unitflow",
+  "private": false,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "⚡ UNITFLOW — Ultra-fast, high-precision smart unit & currency converter with real-time math evaluation, 36+ categories, 300+ units, offline PWA capability, and interactive formula breakdown.",
+  "author": "Anjan Shetty (https://github.com/codexanjan)",
+  "homepage": "https://github.com/codexanjan/unitflow#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codexanjan/unitflow.git"
+  },
+  "bugs": {
+    "url": "https://github.com/codexanjan/unitflow/issues"
+  },
+  "keywords": [
+    "unit-converter",
+    "conversion-calculator",
+    "currency-converter",
+    "math-expression-parser",
+    "scientific-calculator",
+    "measurement-units",
+    "react19",
+    "typescript",
+    "vite",
+    "tailwindcss",
+    "vitest",
+    "pwa",
+    "offline-first",
+    "developer-tools"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.37.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.1.0",
+    "autoprefixer": "^10.5.4",
+    "jsdom": "^29.1.1",
+    "oxlint": "^1.79.0",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
+  }
+}

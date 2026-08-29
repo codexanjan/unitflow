@@ -1,0 +1,67 @@
+import { CategoryDefinition } from '../engine/types';
+
+export const dataCategories: CategoryDefinition[] = [
+  {
+    id: 'data_storage',
+    name: 'Digital Data & Storage',
+    group: 'Data',
+    iconName: 'HardDrive',
+    description: 'Convert between Bits, Bytes, SI prefixes (KB, MB, GB, TB) and IEC binary prefixes (KiB, MiB, GiB, TiB).',
+    baseUnitId: 'byte',
+    popularPairs: [
+      ['megabyte', 'gigabyte'],
+      ['gigabyte', 'terabyte'],
+      ['megabyte', 'mebibyte'],
+      ['gigabyte', 'gibibyte'],
+      ['bit', 'byte'],
+      ['gigabit', 'gigabyte'],
+    ],
+    units: [
+      { id: 'byte', name: 'Byte', symbol: 'B', category: 'data_storage', factor: 1, baseUnit: true, system: 'si', aliases: ['byte', 'bytes', 'b', 'B'] },
+      { id: 'bit', name: 'Bit', symbol: 'bit', category: 'data_storage', factor: 0.125, system: 'si', aliases: ['bit', 'bits', 'b'] },
+      { id: 'nibble', name: 'Nibble (4 bits)', symbol: 'nibble', category: 'data_storage', factor: 0.5, system: 'si', aliases: ['nibble', 'nibbles'] },
+      // SI Decimal (1000)
+      { id: 'kilobit', name: 'Kilobit (SI)', symbol: 'kbit', category: 'data_storage', factor: 125, system: 'metric', aliases: ['kilobit', 'kilobits', 'kb', 'kbit'] },
+      { id: 'megabit', name: 'Megabit (SI)', symbol: 'Mbit', category: 'data_storage', factor: 125000, system: 'metric', aliases: ['megabit', 'megabits', 'mb', 'mbit'] },
+      { id: 'gigabit', name: 'Gigabit (SI)', symbol: 'Gbit', category: 'data_storage', factor: 1.25e8, system: 'metric', aliases: ['gigabit', 'gigabits', 'gb', 'gbit'] },
+      { id: 'terabit', name: 'Terabit (SI)', symbol: 'Tbit', category: 'data_storage', factor: 1.25e11, system: 'metric', aliases: ['terabit', 'terabits', 'tb', 'tbit'] },
+      { id: 'petabit', name: 'Petabit (SI)', symbol: 'Pbit', category: 'data_storage', factor: 1.25e14, system: 'metric', aliases: ['petabit', 'petabits', 'pb', 'pbit'] },
+      { id: 'kilobyte', name: 'Kilobyte (SI 10³)', symbol: 'KB', category: 'data_storage', factor: 1000, system: 'metric', aliases: ['kilobyte', 'kilobytes', 'kb', 'KB'] },
+      { id: 'megabyte', name: 'Megabyte (SI 10⁶)', symbol: 'MB', category: 'data_storage', factor: 1e6, system: 'metric', aliases: ['megabyte', 'megabytes', 'mb', 'MB'] },
+      { id: 'gigabyte', name: 'Gigabyte (SI 10⁹)', symbol: 'GB', category: 'data_storage', factor: 1e9, system: 'metric', aliases: ['gigabyte', 'gigabytes', 'gb', 'GB'] },
+      { id: 'terabyte', name: 'Terabyte (SI 10¹²)', symbol: 'TB', category: 'data_storage', factor: 1e12, system: 'metric', aliases: ['terabyte', 'terabytes', 'tb', 'TB'] },
+      { id: 'petabyte', name: 'Petabyte (SI 10¹⁵)', symbol: 'PB', category: 'data_storage', factor: 1e15, system: 'metric', aliases: ['petabyte', 'petabytes', 'pb', 'PB'] },
+      // IEC Binary (1024)
+      { id: 'kibibyte', name: 'Kibibyte (IEC 2¹⁰)', symbol: 'KiB', category: 'data_storage', factor: 1024, system: 'other', aliases: ['kibibyte', 'kibibytes', 'kib', 'KiB'] },
+      { id: 'mebibyte', name: 'Mebibyte (IEC 2²⁰)', symbol: 'MiB', category: 'data_storage', factor: 1048576, system: 'other', aliases: ['mebibyte', 'mebibytes', 'mib', 'MiB'] },
+      { id: 'gibibyte', name: 'Gibibyte (IEC 2³⁰)', symbol: 'GiB', category: 'data_storage', factor: 1073741824, system: 'other', aliases: ['gibibyte', 'gibibytes', 'gib', 'GiB'] },
+      { id: 'tebibyte', name: 'Tebibyte (IEC 2⁴⁰)', symbol: 'TiB', category: 'data_storage', factor: 1099511627776, system: 'other', aliases: ['tebibyte', 'tebibytes', 'tib', 'TiB'] },
+      { id: 'pebibyte', name: 'Pebibyte (IEC 2⁵⁰)', symbol: 'PiB', category: 'data_storage', factor: 1125899906842624, system: 'other', aliases: ['pebibyte', 'pebibytes', 'pib', 'PiB'] },
+    ],
+  },
+  {
+    id: 'data_transfer',
+    name: 'Data Transfer Rate',
+    group: 'Data',
+    iconName: 'Wifi',
+    description: 'Convert between network transfer rates (bps, Mbps, Gbps, MB/s, MiB/s).',
+    baseUnitId: 'bit_per_second',
+    popularPairs: [
+      ['megabit_per_second', 'megabyte_per_second'],
+      ['gigabit_per_second', 'megabit_per_second'],
+      ['megabyte_per_second', 'mebibyte_per_second'],
+    ],
+    units: [
+      { id: 'bit_per_second', name: 'Bit per second', symbol: 'bps', category: 'data_transfer', factor: 1, baseUnit: true, system: 'si', aliases: ['bit per second', 'bps', 'b/s'] },
+      { id: 'kilobit_per_second', name: 'Kilobit per second', symbol: 'Kbps', category: 'data_transfer', factor: 1e3, system: 'metric', aliases: ['kilobit per second', 'kbps', 'kb/s'] },
+      { id: 'megabit_per_second', name: 'Megabit per second', symbol: 'Mbps', category: 'data_transfer', factor: 1e6, system: 'metric', aliases: ['megabit per second', 'mbps', 'mb/s'] },
+      { id: 'gigabit_per_second', name: 'Gigabit per second', symbol: 'Gbps', category: 'data_transfer', factor: 1e9, system: 'metric', aliases: ['gigabit per second', 'gbps', 'gb/s'] },
+      { id: 'terabit_per_second', name: 'Terabit per second', symbol: 'Tbps', category: 'data_transfer', factor: 1e12, system: 'metric', aliases: ['terabit per second', 'tbps', 'tb/s'] },
+      { id: 'byte_per_second', name: 'Byte per second', symbol: 'B/s', category: 'data_transfer', factor: 8, system: 'si', aliases: ['byte per second', 'b/s', 'B/s'] },
+      { id: 'kilobyte_per_second', name: 'Kilobyte per second (KB/s)', symbol: 'KB/s', category: 'data_transfer', factor: 8000, system: 'metric', aliases: ['kilobyte per second', 'kb/s', 'KB/s'] },
+      { id: 'megabyte_per_second', name: 'Megabyte per second (MB/s)', symbol: 'MB/s', category: 'data_transfer', factor: 8e6, system: 'metric', aliases: ['megabyte per second', 'mb/s', 'MB/s'] },
+      { id: 'gigabyte_per_second', name: 'Gigabyte per second (GB/s)', symbol: 'GB/s', category: 'data_transfer', factor: 8e9, system: 'metric', aliases: ['gigabyte per second', 'gb/s', 'GB/s'] },
+      { id: 'mebibyte_per_second', name: 'Mebibyte per second (MiB/s)', symbol: 'MiB/s', category: 'data_transfer', factor: 8 * 1048576, system: 'other', aliases: ['mebibyte per second', 'mib/s', 'MiB/s'] },
+    ],
+  },
+];
