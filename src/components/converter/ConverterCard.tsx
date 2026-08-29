@@ -49,14 +49,14 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
     () => initialCategoryId || 'length'
   );
 
-  // Group filter & Category Search
-  const [selectedGroup, setSelectedGroup] = useState<string>('All');
-  const [categorySearch, setCategorySearch] = useState<string>('');
-  const [isCategoryPickerOpen, setIsCategoryPickerOpen] = useState(false);
-
   const currentCategory: CategoryDefinition = useMemo(() => {
     return getCategoryById(selectedCategoryId) || allCategories[0];
   }, [selectedCategoryId]);
+
+  // Group filter & Category Search
+  const [selectedGroup, setSelectedGroup] = useState<string>(() => currentCategory.group || 'All');
+  const [categorySearch, setCategorySearch] = useState<string>('');
+  const [isCategoryPickerOpen, setIsCategoryPickerOpen] = useState(false);
 
   // Active units
   const [fromUnitId, setFromUnitId] = useState<string>(() => {
@@ -96,6 +96,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
       setSelectedCategoryId(initialCategoryId);
       const cat = getCategoryById(initialCategoryId);
       if (cat) {
+        setSelectedGroup(cat.group);
         setFromUnitId(initialFromUnitId || cat.units[0]?.id || '');
         setToUnitId(initialToUnitId || cat.units[1]?.id || cat.units[0]?.id || '');
       }
@@ -113,10 +114,22 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
     setSelectedCategoryId(newCatId);
     const cat = getCategoryById(newCatId);
     if (cat && cat.units.length > 0) {
+      setSelectedGroup(cat.group);
       setFromUnitId(cat.units[0].id);
       setToUnitId(cat.units[1]?.id || cat.units[0].id);
     }
     setIsCategoryPickerOpen(false);
+  };
+
+  // When group tab is clicked, filter AND auto-select the first category of that group if needed
+  const handleGroupChange = (grp: 'All' | CategoryGroup) => {
+    setSelectedGroup(grp);
+    if (grp !== 'All' && currentCategory.group !== grp) {
+      const firstInGroup = allCategories.find((c) => c.group === grp);
+      if (firstInGroup) {
+        handleCategoryChange(firstInGroup.id);
+      }
+    }
   };
 
   // Close dropdowns on outside click
@@ -243,7 +256,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
 
   const isCurrentFavorite = isFavorite(currentCategory.id, fromUnit.id, toUnit.id);
 
-  // Filtered categories based on selected group & search
+  // Group definitions
   const groups: ('All' | CategoryGroup)[] = [
     'All',
     'Basic',
@@ -254,6 +267,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
     'Specialized',
   ];
 
+  // Filtered categories
   const visibleCategories = useMemo(() => {
     return allCategories.filter((cat) => {
       const matchGroup = selectedGroup === 'All' || cat.group === selectedGroup;
@@ -286,40 +300,48 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
 
   return (
     <div className="w-full space-y-6">
-      {/* Category Navigation Controls */}
-      <div className="space-y-2.5">
-        {/* Top Control Bar: Group Filter Pills + Search & Grid Toggle */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-          {/* Group Filter Pills */}
+      {/* Category Section: Group Tabs & Category Grid */}
+      <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm p-4 sm:p-5 shadow-sm space-y-4">
+        {/* Top Control Bar: Group Tabs + Search + Browse All Modal */}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pb-2 border-b border-slate-100 dark:border-slate-800/80">
+          {/* Group Filter Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
             {groups.map((grp) => {
               const isActive = selectedGroup === grp;
+              const count = grp === 'All' ? allCategories.length : allCategories.filter((c) => c.group === grp).length;
               return (
                 <button
                   key={grp}
-                  onClick={() => setSelectedGroup(grp)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                  onClick={() => handleGroupChange(grp)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-indigo-600 text-white shadow-xs'
-                      : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/25 ring-2 ring-indigo-400/40'
+                      : 'bg-slate-100 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
-                  {grp}
+                  <span>{grp}</span>
+                  <span
+                    className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                      isActive ? 'bg-indigo-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                    }`}
+                  >
+                    {count}
+                  </span>
                 </button>
               );
             })}
           </div>
 
-          {/* Quick Actions: Search categories & Browse All button */}
+          {/* Search input + Browse All Button */}
           <div className="flex items-center gap-2">
-            <div className="relative flex-1 sm:w-48">
+            <div className="relative flex-1 sm:w-56">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={categorySearch}
                 onChange={(e) => setCategorySearch(e.target.value)}
-                placeholder="Filter categories..."
-                className="w-full pl-8 pr-3 py-1.5 rounded-xl text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 outline-none focus:border-indigo-500 shadow-xs"
+                placeholder="Search 35+ categories..."
+                className="w-full pl-8 pr-3 py-1.5 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 shadow-xs"
               />
               {categorySearch && (
                 <button
@@ -333,7 +355,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
 
             <button
               onClick={() => setIsCategoryPickerOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-colors shrink-0"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-colors shrink-0 cursor-pointer shadow-xs"
               title="Open full category visual grid"
             >
               <Grid className="w-3.5 h-3.5" />
@@ -342,25 +364,25 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
           </div>
         </div>
 
-        {/* Scrollable Category Chip Row */}
-        <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
+        {/* Categories Flex Wrap Container (Fully Visible, No Hidden Overflow) */}
+        <div className="flex flex-wrap items-center gap-2">
           {visibleCategories.map((cat) => {
             const isActive = cat.id === currentCategory.id;
             return (
               <button
                 key={cat.id}
                 onClick={() => handleCategoryChange(cat.id)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
-                    : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25 ring-2 ring-indigo-400/50 scale-[1.02]'
+                    : 'bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-750 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-750 hover:border-indigo-300 dark:hover:border-indigo-700'
                 }`}
               >
                 <CategoryIcon name={cat.iconName} className="w-4 h-4 shrink-0" />
-                <span>{cat.name}</span>
+                <span className="whitespace-normal text-left">{cat.name}</span>
                 <span
-                  className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                    isActive ? 'bg-indigo-700 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                  className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md shrink-0 ${
+                    isActive ? 'bg-indigo-700 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                   }`}
                 >
                   {cat.units.length}
@@ -369,8 +391,17 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
             );
           })}
           {visibleCategories.length === 0 && (
-            <div className="text-xs text-slate-400 py-2">
-              No categories found matching "{categorySearch}".
+            <div className="w-full text-center py-4 text-xs text-slate-400">
+              No categories found matching "{categorySearch}".{' '}
+              <button
+                onClick={() => {
+                  setCategorySearch('');
+                  setSelectedGroup('All');
+                }}
+                className="text-indigo-600 dark:text-indigo-400 font-bold underline ml-1"
+              >
+                Reset filter
+              </button>
             </div>
           )}
         </div>
@@ -418,7 +449,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
                       setFromUnitId(fromId);
                       setToUnitId(toId);
                     }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition-all ${
+                    className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer ${
                       isSelected
                         ? 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold'
                         : 'bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200/70 dark:hover:bg-slate-700'
@@ -460,7 +491,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
                 {rawInput && (
                   <button
                     onClick={() => setRawInput('')}
-                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                   >
                     Clear
                   </button>
@@ -475,7 +506,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
                   setIsFromOpen(!isFromOpen);
                   setIsToOpen(false);
                 }}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-left transition-all"
+                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-left transition-all cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 truncate">
                   <span className="font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-100 truncate">
@@ -511,7 +542,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
                           setIsFromOpen(false);
                           setFromSearch('');
                         }}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs sm:text-sm transition-colors ${
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs sm:text-sm transition-colors cursor-pointer ${
                           unit.id === fromUnit.id
                             ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold'
                             : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200'
@@ -531,7 +562,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
           <div className="lg:col-span-1 flex items-center justify-center py-2">
             <button
               onClick={handleSwap}
-              className={`p-3.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-600 hover:text-white text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/60 shadow-sm transition-all duration-300 ${
+              className={`p-3.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-600 hover:text-white text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/60 shadow-sm transition-all duration-300 cursor-pointer ${
                 isSwapping ? 'rotate-180 scale-110' : 'hover:scale-105'
               }`}
               title="Swap units"
@@ -568,7 +599,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
                   setIsToOpen(!isToOpen);
                   setIsFromOpen(false);
                 }}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-left transition-all"
+                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-left transition-all cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 truncate">
                   <span className="font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-100 truncate">
@@ -604,7 +635,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
                           setIsToOpen(false);
                           setToSearch('');
                         }}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs sm:text-sm transition-colors ${
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs sm:text-sm transition-colors cursor-pointer ${
                           unit.id === toUnit.id
                             ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold'
                             : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200'
@@ -732,7 +763,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
               </div>
               <button
                 onClick={() => setIsCategoryPickerOpen(false)}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -743,8 +774,8 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
               {groups.map((grp) => (
                 <button
                   key={grp}
-                  onClick={() => setSelectedGroup(grp)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                  onClick={() => handleGroupChange(grp)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                     selectedGroup === grp
                       ? 'bg-indigo-600 text-white shadow-xs'
                       : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -765,7 +796,7 @@ export const ConverterCard: React.FC<ConverterCardProps> = ({
                     onClick={() => handleCategoryChange(cat.id)}
                     className={`p-3.5 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
                       isActive
-                        ? 'border-indigo-600 bg-indigo-50/70 dark:bg-indigo-950/50 shadow-sm'
+                        ? 'border-indigo-600 bg-indigo-50/70 dark:bg-indigo-950/50 shadow-sm ring-2 ring-indigo-400/40'
                         : 'border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-850 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-white dark:hover:bg-slate-800'
                     }`}
                   >
