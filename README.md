@@ -21,6 +21,8 @@
   </p>
 
   <h3>
+    <a href="https://unitflow-alpha.vercel.app">🌐 Live Demo (unitflow-alpha.vercel.app)</a>
+    <span> &bull; </span>
     <a href="https://github.com/codexanjan/unitflow">🌟 Star on GitHub</a>
     <span> &bull; </span>
     <a href="#-quick-start">🚀 Quick Start</a>
@@ -28,8 +30,6 @@
     <a href="#-key-features">💎 Features</a>
     <span> &bull; </span>
     <a href="#-supported-categories-36">📐 Categories</a>
-    <span> &bull; </span>
-    <a href="#-architecture--math-engine">🧠 Math Engine</a>
   </h3>
 
 </div>
