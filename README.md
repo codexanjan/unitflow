@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="./.github/assets/banner.svg" alt="UNITFLOW Banner" width="100%" />
+  <img src="./.github/assets/preview.png" alt="UNITFLOW Banner" width="100%" style="border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,0.5);" />
 
   <br />
   <br />
