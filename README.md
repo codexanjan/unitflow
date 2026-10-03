@@ -1,5 +1,7 @@
 <div align="center">
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-6366f1?style=for-the-badge&logo=vercel&logoColor=white)](https://unitflow.vercel.app)
+
   <img src="./.github/assets/preview.png" alt="UNITFLOW Banner" width="100%" style="border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,0.5);" />
 
   <br />
@@ -255,4 +257,14 @@ Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more details
 
 <div align="center">
   <p>If you find <strong>UNITFLOW</strong> useful, please give it a ⭐️ on GitHub!</p>
+</div>
+
+---
+
+<div align="center">
+
+Made with ❤️ by [Anjan Shetty](https://github.com/codexanjan)
+
+[![GitHub](https://img.shields.io/badge/GitHub-codexanjan-181717?style=flat&logo=github)](https://github.com/codexanjan)
+
 </div>
